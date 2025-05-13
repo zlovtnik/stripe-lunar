@@ -1,0 +1,86 @@
+# Server configuration
+server:
+  port: 8080
+spring:
+  application:
+    name: stripe-lunar
+  
+  # Oracle Database Configuration
+  datasource:
+    url: jdbc:oracle:thin:@//localhost:1521/XEPDB1
+    username: system
+    password: password
+    driver-class-name: oracle.jdbc.OracleDriver
+  
+  # JPA/Hibernate
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: STRIPE_LUNAR
+  
+  # Flyway configuration
+  flyway:
+    baseline-on-migrate: true
+    schemas: STRIPE_LUNAR
+    create-schemas: true
+    default-schema: STRIPE_LUNAR
+  
+  # Spring Mail Configuration
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: username
+    password: password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# Stripe API configuration
+stripe:
+  api:
+    key: ${STRIPE_API_KEY:sk_test_placeholder}
+  webhook:
+    secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+
+# Camel properties
+camel:
+  springboot:
+    name: StripeLunarETL
+  servlet:
+    mapping:
+      context-path: /api/*
+  component:
+    servlet:
+      binding-mode: json
+
+# Logging
+logging:
+  level:
+    org:
+      apache:
+        camel: INFO
+    com:
+      lunar:
+        stripelunar: DEBUG
+
+# Email Notification Configuration
+notification:
+  email:
+    enabled: false
+    from: noreply@lunar.com
+    to: admin@lunar.com
+    subject:
+      prefix: "[Stripe-Lunar ETL]"
+
+# Scheduler Configuration
+scheduler:
+  job-summary:
+    enabled: true

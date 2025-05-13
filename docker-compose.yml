@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@//localhost:1521/XEPDB1
+      - SPRING_DATASOURCE_USERNAME=stripe_lunar
+      - SPRING_DATASOURCE_PASSWORD=password
+      - STRIPE_API_KEY=${STRIPE_API_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      - oracle
+    networks:
+      - stripe-lunar-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  oracle:
+    image: container-registry.oracle.com/database/express:21.3.0-xe
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+    environment:
+      - ORACLE_PWD=password
+      - ORACLE_CHARACTERSET=AL32UTF8
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./init-scripts:/docker-entrypoint-initdb.d/setup
+    networks:
+      - stripe-lunar-network
+    healthcheck:
+      test: ["CMD", "sqlplus", "-L", "sys/password@//localhost:1521/XEPDB1 as sysdba", "@healthcheck.sql"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  oracle-data:
+
+networks:
+  stripe-lunar-network:
+    driver: bridge
